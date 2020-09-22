@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -20,10 +21,11 @@ public class CategoryResource {
     CategorySerivce categorySerivce;
 
     @GetMapping("")
-    public String getAllCategories(HttpServletRequest request){
+    public List<Category> getAllCategories(HttpServletRequest request){
         System.out.println(request.getAttribute("userId"));
         int userId = (Integer) request.getAttribute("userId");
-        return "Authenticated user " + userId;
+        List<Category> categoryList = categorySerivce.fetchAllCategories(userId);
+        return categoryList;
     }
 
     @PostMapping("addCategory")
@@ -33,6 +35,18 @@ public class CategoryResource {
         String description = (String) categoryMap.get("description");
         Category category = categorySerivce.addCategory(userId, title, description);
         return new ResponseEntity<>(category, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/{categoryId}")
+    public ResponseEntity<Category> findCategoryById(HttpServletRequest request, @PathVariable Integer categoryId){
+        return new ResponseEntity<>(categorySerivce.fetchCategoryById((Integer)request.getAttribute("userId"),categoryId), HttpStatus.FOUND);
+    }
+
+    @PutMapping("/update/{categoryId}")
+    public String updateCategory(HttpServletRequest request, @RequestBody Category category, @PathVariable Integer categoryId){
+        Integer userId = (Integer) request.getAttribute("userId");
+        categorySerivce.updateCategory(userId, categoryId,category );
+        return "Resource updated";
     }
 
 }
